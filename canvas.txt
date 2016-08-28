@@ -1,0 +1,20 @@
+1 - validar o prolema
+2 - validar a solução
+3 - MVP
+
+clientes:
+quem mais usa e precisa de indicadores?
+quais usuários mais vão usar o produto
+
+proposta de valor:
+- para cada nicho uma proposta diferente
+- informação
+- resultado
+
+atividade chave:
+processamento de dados para entregar informação e resultado
+
+recursos chave:
+dados financeiros
+
+

@@ -1,0 +1,27 @@
+{
+  "name": "neobi",
+  "version": "0.1.1",
+  "description": "app: An Ionic project",
+  "devDependencies": {
+    "bower": "^1.3.3",
+    "http-server": "^0.9.0",
+    "shelljs": "^0.3.0"
+  },
+  "scripts": {
+    "precp": "mkdir ../ctc-app",
+    "cp": "cp -a * ../ctc-app",
+    "predist": "npm run cp",
+    "dist": "tar zcvf ctc-app.tar.gz ../ctc-app",
+    "postdist": "rm -rf ../ctc-app",
+    "pretest": "npm install",
+    "test": "node node_modules/karma/bin/karma start test/karma.conf.js",
+
+    "prestart": "npm install",
+    "start": "http-server www -a 0.0.0.0 -p 8000",
+
+    "preupdate-webdriver": "npm install",
+    "update-webdriver": "webdriver-manager update",
+    "preprotractor": "npm run update-webdriver",
+    "protractor": "protractor test/protractor-conf.js"
+  }
+}

@@ -1,0 +1,12 @@
+#dbTarget {
+}
+#navbar-ex-collapse > ul > li > div {
+  padding-top: 8px;
+}
+
+.spinnerFalse {
+  display: none;
+}
+.spinnerTrue {
+  display: block;
+}
