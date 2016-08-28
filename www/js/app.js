@@ -1,2 +1,2 @@
 'use strict';
-var neobiApp = angular.module('neobiApp', ['ngRoute', 'ngResource']);
+var neobiApp = angular.module('neobiApp', ['ngRoute', 'ngResource', 'ngFileUpload']);

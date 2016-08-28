@@ -4,9 +4,25 @@
   padding-top: 8px;
 }
 
-.spinnerFalse {
+.dashVisible {
+  display: block;
+}
+.dashInvisible {
   display: none;
 }
-.spinnerTrue {
+.fileBoxFalse {
+  display: none;
+}
+.fileBoxTrue {
   display: block;
+}
+.drop-box {
+  background: #F8F8F8;
+  border: 5px dashed #DDD;
+  height: 150px;
+  text-align: center;
+  padding-top: 55px;
+}
+.dragover {
+  border: 5px dashed blue;
 }

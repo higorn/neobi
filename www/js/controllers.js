@@ -1,14 +1,128 @@
 'use strict';
 
-neobiApp.controller('AppCtrl', ['$scope', '$timeout', 'Api', function ($scope, $timeout, Api) {
+neobiApp.controller('AppCtrl', ['$scope', '$timeout', 'Api', 'Upload', 'Csv2Json',
+  function ($scope, $timeout, Api, Upload, Csv2Json) {
 
   var vendas;
   var estoque;
   var financeiro;
+  var vendasObj = {};
+  var readerVendas;
+  var readerEstoque;
+
+  $scope.showFileBox = 'fileBoxFalse';
+  $scope.showDash = 'dashVisible';
+  $scope.log = '';
+  $scope.fileVendasLabel = 'Clique ou arraste aqui para adicionar arquivo';
+  $scope.fileEstoqueLabel = $scope.fileVendasLabel;
+
+  $scope.$watch('fileVendas', function () {
+    if ($scope.fileVendas && $scope.fileVendas.length) {
+      $scope.loadFile($scope.fileVendas);
+      // $scope.upload($scope.file);
+    }
+  });
+  $scope.$watch('fileEstoque', function () {
+    if ($scope.fileEstoque && $scope.fileEstoque.length) {
+      $scope.loadFileEstoque($scope.fileEstoque);
+      // $scope.upload($scope.file);
+    }
+  });
+
+  $scope.loadFile = function(files) {
+    $scope.fileVendasLabel = files[0].name;
+    readerVendas = new FileReader();
+    readerVendas.onload = function (e) {
+      $scope.showFileBox = 'fileBoxFalse';
+      vendasObj = Csv2Json(e.target.result);
+      var file = new File([JSON.stringify(vendasObj)], 'vendas.json', {type: 'text/json'});
+      $scope.fileVendas[0] = file;
+      var totalVendas = 0.0;
+      var totalMetas = 0.0;
+      vendasObj.forEach(function (item, index) {
+        var valorVenda = item['Valor das Vendas'];
+        var valorMeta = item['Meta das Vendas'];
+        valorVenda && (totalVendas += parseFloat(valorVenda));
+        valorMeta && (totalMetas += parseFloat(valorMeta));
+      });
+      vendas.setValue(totalVendas.toFixed(2), {numberPrefix: '$'});
+      vendas.setLimits(0, totalMetas.toFixed(2));
+      $scope.upload($scope.fileVendas);
+    }
+  }
+
+  $scope.loadFileEstoque = function(files) {
+    console.log(files[0]);
+    $scope.fileEstoqueLabel = files[0].name;
+    readerEstoque = new FileReader();
+    readerEstoque.onload = function (e) {
+      $scope.showFileBox = 'fileBoxFalse';
+      var estoqueObj = Csv2Json(e.target.result);
+      var file = new File([JSON.stringify(estoqueObj)], 'estoque.json', {type: 'text/json'});
+      $scope.fileEstoque[0] = file;
+      console.log(estoqueObj);
+      var itemLabels = [];
+      var itemSeries = [];
+      estoqueObj.forEach(function (obj, index) {
+        var produto = obj['item Vendido'];
+        var cobertura = obj['Dias de Cobertura de Estoque'];
+        produto && (itemLabels[index] = produto);
+        cobertura && (itemSeries[index] = parseInt(cobertura));
+      });
+      estoque.setLabels(itemLabels);
+      estoque.addSeries("Cobertura", "Cobertura", itemSeries);
+      $scope.upload($scope.fileEstoque);
+    }
+  }
+
+  $scope.upload = function(file) {
+    if (file.$error) {
+      return;
+    }
+    console.log(file);
+    Upload.upload({
+      url: 'http://localhost:3000',
+      headers: {
+        'Content-Type': 'text/csv',
+        'Accept': 'text/csv'
+      },
+      data: {
+        file: file
+      }
+    }).then(function (resp) {
+      console.log(resp);
+      $timeout(function() {
+        $scope.log = 'file: ' +
+          resp.config.data.file.name +
+          ', Response: ' + JSON.stringify(resp.data) +
+          '\n' + $scope.log;
+      });
+    }, null, function (evt) {
+      var progressPercentage = parseInt(100.0 *
+        evt.loaded / evt.total);
+      $scope.log = 'progress: ' + progressPercentage +
+        '% ' + evt.config.data.file.name + '\n' +
+        $scope.log;
+    });
+  }
+
+  $scope.importarCsv = function () {
+    $scope.showFileBox = 'fileBoxTrue';
+    $scope.showDash = 'dashInvisible';
+  }
+
+  $scope.integrarArquivos = function () {
+    buildDashboard();
+    readerVendas.readAsText($scope.fileVendas[0]);
+    readerEstoque.readAsText($scope.fileEstoque[0]);
+  }
 
   $scope.integrar = function () {
 
+    buildDashboard();
+
     Api.Vendas.query({}, function (dados) {
+      console.log(dados);
       var metaTotal = 0.0;
       var vendasTotal = 0.0;
       dados.forEach(function(item, index) {
@@ -37,6 +151,10 @@ neobiApp.controller('AppCtrl', ['$scope', '$timeout', 'Api', function ($scope, $
       estoque.addSeries("Cobertura", "Cobertura", itemSeries);
     });
 
+  }
+
+  function buildDashboard() {
+    $scope.showDash = 'dashVisible';
     rf.StandaloneDashboard(function(db){
 
       vendas = new GaugeComponent();
@@ -85,41 +203,11 @@ neobiApp.controller('AppCtrl', ['$scope', '$timeout', 'Api', function ($scope, $
       roi.setLimits(0, 100);
       db.addComponent(roi);
 
-    });
-
-    $timeout(function () {
-      vendas.unlock();
-      estoque.unlock();
-      financeiro.unlock();
-    }, 1000);
-  }
-
-  $scope.kpi = function () {
-    StandaloneDashboard(function(db){
-      var kpi = new KPIGroupComponent ();
-      kpi.setDimensions (12, 2);
-      kpi.setCaption('Food Units Available');
-      kpi.addKPI('beverages', {
-        caption: 'Beverages',
-        value: 559,
-        numberSuffix: ' units'
-      });
-      kpi.addKPI('condiments', {
-        caption: 'Condiments',
-        value: 507,
-        numberSuffix: ' units'
-      });
-      kpi.addKPI('confections', {
-        caption: 'Confections',
-        value: 386,
-        numberSuffix: ' units'
-      });
-      kpi.addKPI('daily_products', {
-        caption: 'Daily Products',
-        value: 393,
-        numberSuffix: ' units'
-      });
-      db.addComponent (kpi);
+      $timeout(function () {
+        vendas.unlock();
+        estoque.unlock();
+        financeiro.unlock();
+      }, 1000);
     });
   }
 }]);

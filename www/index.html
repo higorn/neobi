@@ -15,6 +15,8 @@
     <script type="text/javascript" src="lib/angular/angular.min.js"></script>
     <script type="text/javascript" src="lib/angular-route/angular-route.min.js"></script>
     <script type="text/javascript" src="lib/angular-resource/angular-resource.js"></script>
+    <script type="text/javascript" src="lib/ng-file-upload-shim/ng-file-upload-shim.js"></script>
+    <script type="text/javascript" src="lib/ng-file-upload/ng-file-upload.js"></script>
 
     <script src="js/app.js"></script>
     <script src="js/controllers.js"></script>
@@ -44,21 +46,42 @@
                   <span class="caret"></span></button>
                 <ul class="dropdown-menu">
                   <li><a href="#" ng-click="integrar()">Conta Azul</a></li>
-                  <li><a href="#" ng-click="integrar()">Foco</a></li>
-                  <li><a href="#" ng-click="integrar()">SAP</a></li>
-                  <li><a href="#" ng-click="integrar()">CSV</a></li>
+                  <li><a href="#" ng-click="integrar()">Zeropaper</a></li>
+                  <li><a href="#" ng-click="importarCsv()">Arquivo CSV vendas</a></li>
                 </ul>
               </div>
             </li>
-            <li><a href="#" ng-click="kpi()">KPI</a> </li>
+            <!--<li><a href="#" ng-click="kpi()">KPI</a> </li>-->
+            <!--<li><a href="#" ng-click="dashboard()">Dashboard</a> </li>-->
           </ul>
         </div>
       </div>
     </div>
     <div class="section">
       <div class="container">
-        <div class="row">
-          <div id="dbTarget" style="position:relative;" class="rf"></div>
+        <div class="row" ng-class="showFileBox">
+          <div class="col-md-4">
+            Arquivo CSV de vendas:
+            <div ngf-drop ngf-select ng-model="fileVendas" class="drop-box"
+                 ngf-drag-over-class="'dragover'" ngf-multiple="true" ngf-allow-dir="true"
+                 accept="text/csv"
+                 ngf-pattern="'text/csv'">{{fileVendasLabel}}</div>
+            <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
+          </div>
+          <div class="col-md-4">
+            Arquivo CSV de estoque:
+            <div ngf-drop ngf-select ng-model="fileEstoque" class="drop-box"
+                 ngf-drag-over-class="'dragover'" ngf-multiple="true" ngf-allow-dir="true"
+                 accept="text/csv"
+                 ngf-pattern="'text/csv'">{{fileEstoqueLabel}}</div>
+            <div ngf-no-file-drop>File Drag/Drop is not supported for this browser</div>
+          </div>
+          <div class="col-md-4">
+            <button class="btn btn-primary" ng-click="integrarArquivos()">Executar integração</button>
+          </div>
+        </div>
+        <div class="row" ng-class="showDash">
+          <div id="dbTarget" style="position:relative;" class="rf" ng-class="showDash"></div>
         </div>
       </div>
     </div>
